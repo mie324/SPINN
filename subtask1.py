@@ -30,7 +30,7 @@ def build_iter():
 
 
     TEXT.build_vocab(train,val,test)
-    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=100))
+    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=300))
     return train_iter, val_iter, test_iter, TEXT.vocab
 
 
@@ -154,7 +154,7 @@ def main(args):
         print('------------- Training accuracy at end of epoch is {} -------------\n'.format(train_accuracy))
 
 
-    #torch.save(model,'model_{}.pt'.format(model_type))
+    torch.save(model,'model_{}.pt'.format(model_type))
     test_loss,test_accuracy = evaluate_model(model,loss_fxn,test_iter)
     print("================ RESULTS FOR MODEL: {} ================\n".format(model_type))
     # Use the results from the last epoch as loss and accuracy for training set:
@@ -170,12 +170,12 @@ def main(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch-size', type=int, default=64)
+    parser.add_argument('--batch-size', type=int, default=82)
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--model', type=str, default='birnn',
                         help="Model type: baseline,rnn,cnn, crnn, birnn (Default: baseline)")
-    parser.add_argument('--emb-dim', type=int, default=100)
+    parser.add_argument('--emb-dim', type=int, default=300)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
     parser.add_argument('--num-filt', type=int, default=50)
 

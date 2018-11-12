@@ -7,6 +7,11 @@ val_num = 174
 test_num = 261
 
 orig_data_df = pd.read_csv('sentences_balanced_2510.csv')   # save original tsv file to pd dataframe
+for i in orig_data_df:
+    i.replace(' .', '')
+    i.replace(' ,', '')
+    i.replace("'", '')
+
 
 # separate into 2 groups and shuffle
 pun_df = orig_data_df.iloc[0:1255,:]  # contains 1255 puns
