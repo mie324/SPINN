@@ -1,3 +1,6 @@
+'''
+CONVERT SEM-EVAL GIVEN XML FILES TO CSV FILES
+'''
 import xml.etree.ElementTree as ET
 import pandas as pd
 tree = ET.parse('./semeval2017_task7/data/test/subtask1-homographic-test.xml')
