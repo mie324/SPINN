@@ -88,15 +88,6 @@ class biRNN(nn.Module):
         self.lstm = nn.LSTM(embedding_dim,hidden_dim, dropout=0.3, bidirectional=True)
 
     def forward(self, x,lengths):  # pass in x and x_length
-        total = []
-        for i in range(len(lengths)):
-            shuff = []
-            idx = torch.randperm(lengths[i])
-            for j in range (len(idx)):
-                shuff = shuff.append(int(x[i][idx[j]]))
-            total.append(shuff)
-        total = np.array(total)
-        x = torch.from_numpy(total)
 
         x = self.embedding_layer(x)
         x = nn.utils.rnn.pack_padded_sequence(x,lengths)
@@ -110,7 +101,17 @@ class biRNN(nn.Module):
         activation = nn.Sigmoid()
         x = activation(x)
         return x
-
+'''
+        total = []
+        for i in range(len(lengths)):
+            shuff = []
+            idx = torch.randperm(lengths[i])
+            for j in range (len(idx)):
+                shuff = shuff.append(int(x[i][idx[j]]))
+            total.append(shuff)
+        total = np.array(total)
+        x = torch.from_numpy(total)
+'''
 
  # 4.4 CNN MODEL
 

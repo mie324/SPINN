@@ -58,6 +58,8 @@ while True:
     ans = ''
     while ans=='':
         ans = input("Enter a sentence \n ")
+        ans = ans.replace(',','')
+        ans = ans.replace('.','')
         if len(ans.split(sep=" "))<4:
             print('sentence too short')
             ans=''
@@ -70,9 +72,14 @@ while True:
     length = len(ans)
     inputs = np.array(inputs)
     inputs = np.reshape(inputs,(length,1))
-    list = ['baseline', 'cnn', 'rnn', 'crnn','birnn']
+    list = [ 'cnn', 'rnn']
+    j = 0
+    prob = 0.0
     for i in list:
+        j +=1
         model = torch.load("model_{}.pt".format(i))
         predictions, label = evaluate(model, torch.from_numpy(inputs),length)
         predictions = predictions.detach().numpy()
-        print('Model {}: {}({})'.format(i,label,round(float(predictions),3)))
+        print('{} model thinks this is {}({})'.format(i.capitalize(),label,round(float(predictions),3)))
+        prob +=predictions
+    print("Probability of This sentence being pun is :" , 100*round(float(prob)/j,4),'%')
