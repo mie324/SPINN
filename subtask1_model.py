@@ -1,5 +1,6 @@
 import torch
 import torch.nn as nn
+import numpy as np
 import torch.nn.functional as F
 vocab_size = 6247
 torch.manual_seed(77)
@@ -87,8 +88,16 @@ class biRNN(nn.Module):
         self.lstm = nn.LSTM(embedding_dim,hidden_dim, dropout=0.3, bidirectional=True)
 
     def forward(self, x,lengths):  # pass in x and x_length
-        #for i in range(len(lengths)):
-        #    x[i] = torch.randperm(x[i])
+        total = []
+        for i in range(len(lengths)):
+            shuff = []
+            idx = torch.randperm(lengths[i])
+            for j in range (len(idx)):
+                shuff = shuff.append(int(x[i][idx[j]]))
+            total.append(shuff)
+        total = np.array(total)
+        x = torch.from_numpy(total)
+
         x = self.embedding_layer(x)
         x = nn.utils.rnn.pack_padded_sequence(x,lengths)
         x_for, x_back = self.lstm(x)[1]  # just take the hidden state of the output
