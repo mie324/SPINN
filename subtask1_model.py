@@ -50,7 +50,7 @@ class Baseline(nn.Module):
 
 
 # 4.3 RNN MODEL
-
+'''
 class RNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(RNN, self).__init__()
@@ -67,8 +67,26 @@ class RNN(nn.Module):
         activation = nn.Sigmoid()
         x = activation(x)
         return x
+'''
+class RNN(nn.Module):
+    def __init__(self, embedding_dim, vocab, hidden_dim):
+        super(RNN, self).__init__()
+        self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
+        self.gru = nn.GRU(embedding_dim,hidden_dim, dropout=0.1)
+        self.fc1 = nn.Linear(hidden_dim,1)
+        self.lstm = nn.LSTM(embedding_dim,hidden_dim, dropout=0.3)
 
-
+    def forward(self, x,lengths):  # pass in x and x_length
+        x = self.embedding_layer(x)
+        x = nn.utils.rnn.pack_padded_sequence(x,lengths)
+        out,hidden = self.lstm(x) # just take the hidden state of the output
+        x = hidden[1]
+        #x = self.gru(x)[1]
+        x = x.squeeze()
+        x = self.fc1(x)
+        activation = nn.Sigmoid()
+        x = activation(x)
+        return x
 
 
  # 4.4 CNN MODEL

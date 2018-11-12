@@ -56,6 +56,7 @@ def evaluate_model(model,loss_fxn,val_iter):
     total_val_corr = 0
     accum_loss = 0
     vali_samples = len(val_iter.dataset)
+    model.eval()
     for i,data in enumerate(val_iter):
         (x, x_lengths), y = data.text, data.detection
         predictions = model.forward(x,x_lengths)
@@ -163,7 +164,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epochs', type=int, default=25)
-    parser.add_argument('--model', type=str, default='cnn',
+    parser.add_argument('--model', type=str, default='rnn',
                         help="Model type: baseline,rnn,cnn (Default: baseline)")
     parser.add_argument('--emb-dim', type=int, default=200)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
