@@ -49,25 +49,35 @@ class Baseline(nn.Module):
         ######
 
 
-# 4.3 RNN MODEL
-'''
-class RNN(nn.Module):
-    def __init__(self, embedding_dim, vocab, hidden_dim):
-        super(RNN, self).__init__()
+class CRNN(nn.Module):
+    def __init__(self, embedding_dim, vocab, n_filters, filter_sizes):
+        super(CRNN, self).__init__()
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
-        self.gru = nn.GRU(embedding_dim,hidden_dim)
-        self.fc1 = nn.Linear(hidden_dim,1)
+        self.conv1 = nn.Conv2d(1, out_channels=n_filters, kernel_size=(filter_sizes[0], embedding_dim))
+        self.conv2 = nn.Conv2d(1, n_filters, (filter_sizes[1], embedding_dim))
+        self.fc1 = nn.Linear(n_filters, 1)
+        self.gru = nn.GRU(n_filters, n_filters, dropout=0.1, batch_first=True)
 
-    def forward(self, x,lengths):  # pass in x and x_length
-        x = self.embedding_layer(x)
-        x = nn.utils.rnn.pack_padded_sequence(x,lengths)
-        x = self.gru(x)[1]  # just take the hidden state of the output
-        x = x.squeeze()
+    def forward(self, x, lengths):
+        x = torch.transpose(x, 0, 1)  # make it into dim = (bs, sentence length)
+        x = self.embedding_layer(x)  # make it into dim = (bs,sentence length, embedding dim)
+        shape = x.shape
+        x = x.view(shape[0], 1, shape[1], shape[2])
+        x1 = self.conv1(x)  # do convolution using kernel size 2, get dim = (bs,filter num, feature map size,1)
+        x2 = self.conv2(x)  # do convolution using kernel size 4
+        relu = nn.ReLU()
+        x1 = relu(x1).squeeze()
+        x2 = relu(x2).squeeze()
+        x = torch.cat((x1, x2), 2)
+        x = torch.transpose(x,1,2)
+        x = self.gru(x)[1]
+        x = x.squeeze()  # get dim = (bs,100)
         x = self.fc1(x)
-        activation = nn.Sigmoid()
-        x = activation(x)
+        sigmoid = nn.Sigmoid()
+        x = sigmoid(x)
         return x
-'''
+
+
 class RNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(RNN, self).__init__()
@@ -117,3 +127,24 @@ class CNN(nn.Module):
         sigmoid = nn.Sigmoid()
         x = sigmoid(x)
         return x
+
+
+# 4.3 RNN MODEL
+'''
+class RNN(nn.Module):
+    def __init__(self, embedding_dim, vocab, hidden_dim):
+        super(RNN, self).__init__()
+        self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
+        self.gru = nn.GRU(embedding_dim,hidden_dim)
+        self.fc1 = nn.Linear(hidden_dim,1)
+
+    def forward(self, x,lengths):  # pass in x and x_length
+        x = self.embedding_layer(x)
+        x = nn.utils.rnn.pack_padded_sequence(x,lengths)
+        x = self.gru(x)[1]  # just take the hidden state of the output
+        x = x.squeeze()
+        x = self.fc1(x)
+        activation = nn.Sigmoid()
+        x = activation(x)
+        return x
+'''

@@ -26,7 +26,7 @@ def build_iter():
                                                            repeat=False)
 
     TEXT.build_vocab(train,val,test)
-    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=200))
+    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=100))
     return train_iter, val_iter, test_iter, TEXT.vocab
 
 
@@ -42,6 +42,8 @@ def load_model(learning_rate,vocab):
         model = RNN(embed_dim,vocab,rnn_hidden_dim)
     elif model_type == 'cnn':
         model = CNN(embed_dim, vocab, num_filters, np.array([2,4]))
+    elif model_type == 'crnn':
+        model = CRNN(embed_dim, vocab, num_filters, np.array([2,4]))
     loss_fxn = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     return model,loss_fxn,optimizer
@@ -164,9 +166,9 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epochs', type=int, default=25)
-    parser.add_argument('--model', type=str, default='rnn',
-                        help="Model type: baseline,rnn,cnn (Default: baseline)")
-    parser.add_argument('--emb-dim', type=int, default=200)
+    parser.add_argument('--model', type=str, default='cnn',
+                        help="Model type: baseline,rnn,cnn, crnn (Default: baseline)")
+    parser.add_argument('--emb-dim', type=int, default=100)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
     parser.add_argument('--num-filt', type=int, default=50)
 
