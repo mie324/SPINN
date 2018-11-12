@@ -80,18 +80,23 @@ class CRNN(nn.Module):
 
 class biRNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
-        super(RNN, self).__init__()
+        super(biRNN, self).__init__()
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
         self.gru = nn.GRU(embedding_dim,hidden_dim, dropout=0.1, bidirectional=True)
         self.fc1 = nn.Linear(2*hidden_dim,1)
-        #self.lstm = nn.LSTM(embedding_dim,hidden_dim, dropout=0.3)
+        self.lstm = nn.LSTM(embedding_dim,hidden_dim, dropout=0.3, bidirectional=True)
 
     def forward(self, x,lengths):  # pass in x and x_length
+        #for i in range(len(lengths)):
+        #    x[i] = torch.randperm(x[i])
         x = self.embedding_layer(x)
         x = nn.utils.rnn.pack_padded_sequence(x,lengths)
-        x_for, x_back = self.gru(x)[1]  # just take the hidden state of the output
-        x = torch.cat((x_for,x_back),-1)
+        x_for, x_back = self.lstm(x)[1]  # just take the hidden state of the output
+        x_for = x_for[1].squeeze()
+        x_back = x_back[1].squeeze()
+        x = torch.cat((x_for,x_back),1)
         x = x.squeeze()
+
         x = self.fc1(x)
         activation = nn.Sigmoid()
         x = activation(x)

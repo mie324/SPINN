@@ -173,7 +173,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epochs', type=int, default=100)
-    parser.add_argument('--model', type=str, default='rnn',
+    parser.add_argument('--model', type=str, default='birnn',
                         help="Model type: baseline,rnn,cnn, crnn, birnn (Default: baseline)")
     parser.add_argument('--emb-dim', type=int, default=100)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
