@@ -78,20 +78,19 @@ class CRNN(nn.Module):
         return x
 
 
-class RNN(nn.Module):
+class biRNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(RNN, self).__init__()
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
-        self.gru = nn.GRU(embedding_dim,hidden_dim, dropout=0.1)
-        self.fc1 = nn.Linear(hidden_dim,1)
-        self.lstm = nn.LSTM(embedding_dim,hidden_dim, dropout=0.3)
+        self.gru = nn.GRU(embedding_dim,hidden_dim, dropout=0.1, bidirectional=True)
+        self.fc1 = nn.Linear(2*hidden_dim,1)
+        #self.lstm = nn.LSTM(embedding_dim,hidden_dim, dropout=0.3)
 
     def forward(self, x,lengths):  # pass in x and x_length
         x = self.embedding_layer(x)
         x = nn.utils.rnn.pack_padded_sequence(x,lengths)
-        out,hidden = self.lstm(x) # just take the hidden state of the output
-        x = hidden[1]
-        #x = self.gru(x)[1]
+        x_for, x_back = self.gru(x)[1]  # just take the hidden state of the output
+        x = torch.cat((x_for,x_back),-1)
         x = x.squeeze()
         x = self.fc1(x)
         activation = nn.Sigmoid()
@@ -105,12 +104,12 @@ class CNN(nn.Module):
     def __init__(self, embedding_dim, vocab, n_filters, filter_sizes):
         super(CNN, self).__init__()
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
-        self.conv1 = nn.Conv2d(1,out_channels=n_filters,kernel_size=(filter_sizes[0],embedding_dim))
-        self.conv2 = nn.Conv2d(1,n_filters,(filter_sizes[1],embedding_dim))
-        self.fc1 = nn.Linear(n_filters*2,1)
+        self.conv1 = nn.Conv2d(1, out_channels=n_filters, kernel_size=(filter_sizes[0], embedding_dim))
+        self.conv2 = nn.Conv2d(1, n_filters, (filter_sizes[1], embedding_dim))
+        self.fc1 = nn.Linear(n_filters*2, 1)
 
     def forward(self, x, lengths):
-        x = torch.transpose(x,0,1)   # make it into dim = (bs, sentence length)
+        x = torch.transpose(x, 0, 1)   # make it into dim = (bs, sentence length)
         x = self.embedding_layer(x)   # make it into dim = (bs,sentence length, embedding dim)
         shape = x.shape
         x = x.view(shape[0],1,shape[1],shape[2])
@@ -130,7 +129,6 @@ class CNN(nn.Module):
 
 
 # 4.3 RNN MODEL
-'''
 class RNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(RNN, self).__init__()
@@ -147,4 +145,3 @@ class RNN(nn.Module):
         activation = nn.Sigmoid()
         x = activation(x)
         return x
-'''

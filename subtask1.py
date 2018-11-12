@@ -20,10 +20,14 @@ def build_iter():
     fields = [('text', TEXT), ('detection', DETECTION_LABEL)]
     train, val, test = data.TabularDataset.splits(path = '',train='train1.tsv', validation='validation1.tsv',
                                                   test='test1.tsv', format='tsv', fields=fields, skip_header=True)
-    train_iter, val_iter, test_iter = data.Iterator.splits((train, val, test), sort_key=lambda x: len(x.text),
-                                                           batch_sizes=(bs, bs, bs),
-                                                           sort_within_batch=True,
-                                                           repeat=False)
+
+    train_iter= torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
+                                    dataset=train, batch_size =64, train=True, shuffle=True)
+    val_iter = torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
+                                     dataset=val, batch_size=64)
+    test_iter = torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
+                                     dataset=test, batch_size=64)
+
 
     TEXT.build_vocab(train,val,test)
     TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=100))
@@ -44,6 +48,8 @@ def load_model(learning_rate,vocab):
         model = CNN(embed_dim, vocab, num_filters, np.array([2,4]))
     elif model_type == 'crnn':
         model = CRNN(embed_dim, vocab, num_filters, np.array([2,4]))
+    elif model_type == 'birnn':
+        model = biRNN(embed_dim,vocab,rnn_hidden_dim)
     loss_fxn = nn.BCELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
     return model,loss_fxn,optimizer
@@ -103,6 +109,7 @@ def main(args):
     for epoch in range(MaxEpochs):
         accum_loss = float(0)
         total_correct = 0
+
 
         for i,data in enumerate(train_iter):
             (x, x_lengths), y = data.text, data.detection
@@ -165,9 +172,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--batch-size', type=int, default=64)
     parser.add_argument('--lr', type=float, default=0.001)
-    parser.add_argument('--epochs', type=int, default=25)
-    parser.add_argument('--model', type=str, default='cnn',
-                        help="Model type: baseline,rnn,cnn, crnn (Default: baseline)")
+    parser.add_argument('--epochs', type=int, default=100)
+    parser.add_argument('--model', type=str, default='rnn',
+                        help="Model type: baseline,rnn,cnn, crnn, birnn (Default: baseline)")
     parser.add_argument('--emb-dim', type=int, default=100)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
     parser.add_argument('--num-filt', type=int, default=50)
