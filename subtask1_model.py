@@ -6,7 +6,7 @@ vocab_size = 6247
 torch.manual_seed(77)
 
 
-# 4.2 BASELINE MODEL
+
 
 # class Baseline(nn.Module):
 #     def __init__(self, embedding_dim, vocab):
@@ -23,19 +23,16 @@ torch.manual_seed(77)
 #         x = activation(x)
 #         return x
 
+#  BASELINE 
 class Baseline(nn.Module):
     def __init__(self, embedding_dim, vocab):
         super(Baseline, self).__init__()
 
-        ######
-        # 4.1 YOUR CODE HERE
         self.embed = nn.Embedding.from_pretrained(vocab.vectors)
         self.fc1 = nn.Linear(embedding_dim, 1, bias=True)
-        ######
+
 
     def forward(self, x, lengths=None):
-
-        ######
 
         x = self.embed(x)
         x = torch.sum(x, dim=0)
@@ -45,11 +42,9 @@ class Baseline(nn.Module):
         x = self.fc1(x)
         x = torch.sigmoid(x.squeeze())
         return x
-        # 4.1 YOUR CODE HERE
-
-        ######
 
 
+# CNN AND RNN COMBINED
 class CRNN(nn.Module):
     def __init__(self, embedding_dim, vocab, n_filters, filter_sizes):
         super(CRNN, self).__init__()
@@ -78,7 +73,8 @@ class CRNN(nn.Module):
         x = sigmoid(x)
         return x
 
-
+    
+# LSTM
 class biRNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(biRNN, self).__init__()
@@ -113,8 +109,8 @@ class biRNN(nn.Module):
         x = torch.from_numpy(total)
 '''
 
- # 4.4 CNN MODEL
 
+ # CNN MODEL
 class CNN(nn.Module):
     def __init__(self, embedding_dim, vocab, n_filters, filter_sizes):
         super(CNN, self).__init__()
@@ -143,7 +139,7 @@ class CNN(nn.Module):
         return x
 
 
-# 4.3 RNN MODEL
+# RNN MODEL
 class RNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(RNN, self).__init__()
