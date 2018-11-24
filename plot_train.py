@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 '''
-PLOT TRAINING AND VALIDATION ACCURACY FOR RNN AND CNN, USING THE OUTPUT CSV SAVED EARLIER IN MAIN()
+Plot training and validation accuracy for RNN and CNN, using the output csv files in the plots folder, which were produced by main()
 '''
 def plot_accuracy(file1,file2):
     csv_name1 = file1 # rnn
