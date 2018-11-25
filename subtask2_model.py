@@ -146,7 +146,8 @@ class RNN(nn.Module):
         super(RNN, self).__init__()
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
         self.gru = nn.GRU(embedding_dim,hidden_dim)
-        self.fc1 = nn.Linear(hidden_dim,1)
+        self.fc1 = nn.Linear(hidden_dim,50)
+        self.fc2 = nn.Linear(50,1)
         self.hidden_dim = hidden_dim
 
     def forward(self, x,lengths):  # pass in x and x_length
@@ -157,6 +158,7 @@ class RNN(nn.Module):
         total_len = x.shape[0]
         x = x.view(-1, self.hidden_dim)
         x = self.fc1(x)
-        x = x.view(-1,total_len)
-        x = F.softmax(x,dim=1)
+        x = self.fc2(x)
+        x = x.view(-1, total_len)
+        x = F.softmax(x, dim=1)
         return x

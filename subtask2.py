@@ -18,8 +18,8 @@ bs = 64
 def build_iter():
     global bs
     TEXT = data.Field(sequential=True, include_lengths=True, tokenize='spacy')
-    DETECTION_LABEL = data.Field(sequential=False, use_vocab=False)
-    fields = [('text', TEXT), ('detection', DETECTION_LABEL)]
+    LOCATION_LABEL = data.Field(sequential=False, use_vocab=False)
+    fields = [('text', TEXT), ('location', LOCATION_LABEL)]
     train, val, test = data.TabularDataset.splits(path = '',train='train1location.tsv', validation='validation1location.tsv',
                                                   test='test1location.tsv', format='tsv', fields=fields, skip_header=True)
 
@@ -69,7 +69,7 @@ def evaluate_model(model,loss_fxn,val_iter):
     model.eval()
     for i,data in enumerate(val_iter):
 
-        (x, x_lengths), y = data.text, data.detection
+        (x, x_lengths), y = data.text, data.location
         # for j in range(x.shape[1]):   #print sentence for debugging purpose
         #     sent = ""
         #     for k in x[:,j]:
@@ -123,7 +123,7 @@ def main(args):
 
 
         for i,data in enumerate(train_iter):
-            (x, x_lengths), y = data.text, data.detection
+            (x, x_lengths), y = data.text, data.location
 
             # for j in range(x.shape[1]):   #print sentence for debugging purpose
             #     sent = ""
