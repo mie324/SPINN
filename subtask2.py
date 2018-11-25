@@ -82,7 +82,7 @@ def evaluate_model(model,loss_fxn,val_iter):
 
         # compare batch predictions to labels
         pred_res = predictions.data.squeeze().numpy()
-        actual_res = y.int().numpy()
+        actual_res = (y-1).int().numpy()
         label_ans = np.argmax(pred_res, axis=1)
         label_ans = np.where(label_ans == actual_res, 1, 0)
         total_val_corr += sum(label_ans)
@@ -143,7 +143,7 @@ def main(args):
 
             # comopare batch predictions to labels
             pred_res = predictions.data.squeeze().numpy()
-            actual_res = y.int().numpy()
+            actual_res = (y-1).int().numpy()
             label_ans = np.argmax(pred_res,axis = 1)
             label_ans = np.where(label_ans == actual_res, 1, 0)
             total_correct += sum(label_ans)
