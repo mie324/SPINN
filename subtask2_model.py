@@ -66,7 +66,8 @@ class CRNN(nn.Module):
         x2 = relu(x2).squeeze()
         x = torch.cat((x1, x2), 2)
         x = torch.transpose(x,1,2)
-        x = self.gru(x)[1]
+        x = self.gru(x)
+        x = x[1]
         x = x.squeeze()  # get dim = (bs,100)
         x = self.fc1(x)
         sigmoid = nn.Sigmoid()
@@ -146,13 +147,17 @@ class RNN(nn.Module):
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
         self.gru = nn.GRU(embedding_dim,hidden_dim)
         self.fc1 = nn.Linear(hidden_dim,1)
+        self.hidden_dim = hidden_dim
 
     def forward(self, x,lengths):  # pass in x and x_length
         x = self.embedding_layer(x)
-        x = nn.utils.rnn.pack_padded_sequence(x,lengths)
-        x = self.gru(x)[1]  # just take the hidden state of the output
-        x = x.squeeze()
+        #x = nn.utils.rnn.pack_padded_sequence(x,lengths)
+        x = self.gru(x)
+        x = x[0]  # just take the hidden state of the output
+        total_len = x.shape[0]
+        x = x.view(-1, self.hidden_dim)
         x = self.fc1(x)
         activation = nn.Sigmoid()
         x = activation(x)
+        x = x.view(total_len, -1)
         return x
