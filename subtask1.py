@@ -19,8 +19,8 @@ def build_iter():
     TEXT = data.Field(sequential=True, include_lengths=True, tokenize='spacy')
     DETECTION_LABEL = data.Field(sequential=False, use_vocab=False)
     fields = [('text', TEXT), ('detection', DETECTION_LABEL)]
-    train, val, test = data.TabularDataset.splits(path = '',train='train1.tsv', validation='validation1.tsv',
-                                                  test='test1.tsv', format='tsv', fields=fields, skip_header=True)
+    train, val, test = data.TabularDataset.splits(path = '',train='train1detection.tsv', validation='validation1detection.tsv',
+                                                  test='test1detection.tsv', format='tsv', fields=fields, skip_header=True)
 
     train_iter= torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
                                     dataset=train, batch_size =64, train=True, shuffle=True)
