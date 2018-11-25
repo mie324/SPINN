@@ -20,8 +20,8 @@ def build_iter():
     TEXT = data.Field(sequential=True, include_lengths=True, tokenize='spacy')
     DETECTION_LABEL = data.Field(sequential=False, use_vocab=False)
     fields = [('text', TEXT), ('detection', DETECTION_LABEL)]
-    train, val, test = data.TabularDataset.splits(path = '',train='train1.tsv', validation='validation1.tsv',
-                                                  test='test1.tsv', format='tsv', fields=fields, skip_header=True)
+    train, val, test = data.TabularDataset.splits(path = '',train='train1location.tsv', validation='validation1location.tsv',
+                                                  test='test1location.tsv', format='tsv', fields=fields, skip_header=True)
 
     train_iter= torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
                                     dataset=train, batch_size =64, train=True, shuffle=True)
@@ -76,11 +76,9 @@ def evaluate_model(model,loss_fxn,val_iter):
         # compare batch predictions to labels
         pred_res = predictions.data.squeeze().numpy()
         actual_res = y.int().numpy()
-        for j in range(len(y)):
-            if pred_res[j] <= 0.5 and actual_res[j] == 0:
-                total_val_corr += 1
-            elif pred_res[j] > 0.5 and actual_res[j] == 1:
-                total_val_corr += 1
+        label_ans = np.argmax(pred_res, axis=1)
+        label_ans = np.where(label_ans == actual_res, 1, 0)
+        total_val_corr += sum(label_ans)
 
     eval_accuracy = float(total_val_corr)/vali_samples
     return accum_loss/(i+1),eval_accuracy  # return this as the evaluation accuracy
@@ -119,11 +117,16 @@ def main(args):
 
         for i,data in enumerate(train_iter):
             (x, x_lengths), y = data.text, data.detection
-
+            for j in range(x.shape[1]):
+                sent = ""
+                for k in x[:,j]:
+                    sent+=vocab.itos[k]
+                    sent+=' '
+                print (sent)
             optimizer.zero_grad()
             predictions = model.forward(x,x_lengths)
 
-            loss = loss_fxn(input=predictions.squeeze(),target=y.float())
+            loss = loss_fxn(input=predictions.squeeze(),target=(y-1).long())
             accum_loss += loss.item()
 
             loss.backward()
@@ -132,11 +135,9 @@ def main(args):
             # comopare batch predictions to labels
             pred_res = predictions.data.squeeze().numpy()
             actual_res = y.int().numpy()
-            for j in range(len(y)):
-                if pred_res[j] <= 0.5 and actual_res [j] ==0:
-                    total_correct +=1
-                elif pred_res[j] > 0.5 and actual_res [j] ==1:
-                    total_correct +=1
+            label_ans = np.argmax(pred_res,axis = 1)
+            label_ans = np.where(label_ans == actual_res, 1, 0)
+            total_correct += sum(label_ans)
 
             if batch_done == 0:
                 print('\n ---------------- T R A I N I N G   I N   P R O G R E S S ----------------\n')

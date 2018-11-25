@@ -58,8 +58,6 @@ while True:
     ans = ''
     while ans=='':
         ans = input("Enter a sentence \n ")
-        ans = ans.replace(',','')
-        ans = ans.replace('.','')
         if len(ans.split(sep=" "))<4:
             print('sentence too short')
             ans=''

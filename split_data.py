@@ -6,8 +6,8 @@ train_num = 820
 val_num = 174
 test_num = 261
 
-#task = 'detection'
-task = 'location'
+task = 'detection'
+#task = 'location'
 
 orig_data_df = pd.read_csv('sentences_balanced_2510.csv')   # save original tsv file to pd dataframe
 orig_data_df['text']=orig_data_df['text'].str.replace('.', '', regex=True)

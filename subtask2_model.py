@@ -157,7 +157,6 @@ class RNN(nn.Module):
         total_len = x.shape[0]
         x = x.view(-1, self.hidden_dim)
         x = self.fc1(x)
-        activation = nn.Sigmoid()
-        x = activation(x)
-        x = x.view(total_len, -1)
+        x = x.view(-1,total_len)
+        x = F.softmax(x,dim=1)
         return x
