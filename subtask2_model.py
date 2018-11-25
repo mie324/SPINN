@@ -145,7 +145,7 @@ class RNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(RNN, self).__init__()
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
-        self.gru = nn.GRU(embedding_dim,hidden_dim)
+        self.gru = nn.LSTM(embedding_dim,hidden_dim)
         self.fc1 = nn.Linear(hidden_dim,50)
         self.fc2 = nn.Linear(50,1)
         self.hidden_dim = hidden_dim
@@ -154,11 +154,16 @@ class RNN(nn.Module):
         x = self.embedding_layer(x)
         #x = nn.utils.rnn.pack_padded_sequence(x,lengths)
         x = self.gru(x)
+
         x = x[0]  # just take the hidden state of the output
         total_len = x.shape[0]
+        x = torch.transpose(x,0,1)
+        x = x.contiguous()
         x = x.view(-1, self.hidden_dim)
+
         x = self.fc1(x)
         x = self.fc2(x)
+
         x = x.view(-1, total_len)
         x = F.softmax(x, dim=1)
         return x

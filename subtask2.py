@@ -9,7 +9,7 @@ import numpy as np
 from subtask2_model import *
 import datetime
 import pandas as pd
-import matplotlib as plt
+import matplotlib.pyplot as plt
 torch.manual_seed(77)
 bs,lr,MaxEpochs,model_type,num_filters,rnn_hidden_dim,embed_dim,save_csv = None,None,None,None,None,None,None,None
 
@@ -32,7 +32,7 @@ def build_iter():
 
 
     TEXT.build_vocab(train,val,test)
-    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=300))
+    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=100))
     return train_iter, val_iter, test_iter, TEXT.vocab
 
 
@@ -53,7 +53,7 @@ def load_model(learning_rate,vocab):
     elif model_type == 'birnn':
         model = biRNN(embed_dim,vocab,rnn_hidden_dim)
     loss_fxn = nn.CrossEntropyLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps=1e-04)
     return model,loss_fxn,optimizer
 
 
@@ -212,12 +212,12 @@ def plot_accuracy(file,test_acc):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--batch-size', type=int, default=82)
+    parser.add_argument('--batch-size', type=int, default=32)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--model', type=str, default='rnn',
                         help="Model type: baseline,rnn,cnn, crnn, birnn (Default: baseline)")
-    parser.add_argument('--emb-dim', type=int, default=300)
+    parser.add_argument('--emb-dim', type=int, default=100)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
     parser.add_argument('--num-filt', type=int, default=50)
     parser.add_argument('--save-csv',type=bool,default=True)
