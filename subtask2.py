@@ -167,7 +167,7 @@ def main(args):
         print('------------- Training accuracy at end of epoch is {} -------------\n'.format(train_accuracy))
 
 
-    torch.save(model,'model_{}.pt'.format(model_type))
+    torch.save(model,'model_{}{}.pt'.format(model_type,'location'))
 
     test_loss,test_accuracy = evaluate_model(model,loss_fxn,test_iter)
     print("================ RESULTS FOR MODEL: {} ================\n".format(model_type))
