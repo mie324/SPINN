@@ -183,7 +183,7 @@ def main(args):
         df = pd.DataFrame({'steps': batch_number_log.squeeze(), "train_accuracy": train_accuracy_log.squeeze(),
                            'validation_accuracy': vali_accuracy_log.squeeze()})
         # use current date_time to label model name
-        file_name = '{}_{}.csv'.format(model_type,curr_time.strftime("%b%d_%H_%M_%S"))
+        file_name = './plots/{}_{}.csv'.format(model_type,curr_time.strftime("%b%d_%H_%M_%S"))
         df.to_csv(file_name, index=False)
         plot_accuracy(file_name, test_accuracy)
 
