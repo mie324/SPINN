@@ -155,7 +155,7 @@ class RNN(nn.Module):
         #x = nn.utils.rnn.pack_padded_sequence(x,lengths)
         x = self.gru(x)
 
-        x = x[0]  # just take the hidden state of the output
+        x = x[0]  # take the hidden states from all of the cells (i.e. from every token in the sentence)
         total_len = x.shape[0]
         x = torch.transpose(x,0,1)
         x = x.contiguous()
