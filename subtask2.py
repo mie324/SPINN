@@ -32,7 +32,7 @@ def build_iter():
 
 
     TEXT.build_vocab(train,val,test)
-    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=100))
+    TEXT.vocab.load_vectors(torchtext.vocab.GloVe(name='6B', dim=300))
     return train_iter, val_iter, test_iter, TEXT.vocab
 
 
@@ -217,10 +217,10 @@ if __name__ == '__main__':
     parser.add_argument('--epochs', type=int, default=50)
     parser.add_argument('--model', type=str, default='rnn',
                         help="Model type: baseline,rnn,cnn, crnn, birnn (Default: baseline)")
-    parser.add_argument('--emb-dim', type=int, default=100)
+    parser.add_argument('--emb-dim', type=int, default=300)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
     parser.add_argument('--num-filt', type=int, default=50)
-    parser.add_argument('--save-csv',type=bool,default=True)
+    parser.add_argument('--save-csv', type=bool, default=True)
 
     args = parser.parse_args()
 

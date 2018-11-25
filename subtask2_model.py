@@ -145,7 +145,7 @@ class RNN(nn.Module):
     def __init__(self, embedding_dim, vocab, hidden_dim):
         super(RNN, self).__init__()
         self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
-        self.gru = nn.LSTM(embedding_dim,hidden_dim)
+        self.gru = nn.LSTM(embedding_dim,hidden_dim,dropout=0.1)
         self.fc1 = nn.Linear(hidden_dim,50)
         self.fc2 = nn.Linear(50,1)
         self.hidden_dim = hidden_dim
