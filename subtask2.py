@@ -9,7 +9,7 @@ import numpy as np
 from subtask2_model import *
 import datetime
 import pandas as pd
-
+import matplotlib as plt
 torch.manual_seed(77)
 bs,lr,MaxEpochs,model_type,num_filters,rnn_hidden_dim,embed_dim,save_csv = None,None,None,None,None,None,None,None
 
@@ -24,11 +24,11 @@ def build_iter():
                                                   test='test1location.tsv', format='tsv', fields=fields, skip_header=True)
 
     train_iter= torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
-                                    dataset=train, batch_size =64, train=True, shuffle=True)
+                                    dataset=train, batch_size =args.batch_size, train=True, shuffle=True)
     val_iter = torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
-                                     dataset=val, batch_size=64)
+                                     dataset=val, batch_size=args.batch_size)
     test_iter = torchtext.data.BucketIterator(sort_key=lambda x: len(x.text), sort_within_batch=True, repeat=False,
-                                     dataset=test, batch_size=64)
+                                     dataset=test, batch_size=args.batch_size)
 
 
     TEXT.build_vocab(train,val,test)
@@ -68,9 +68,16 @@ def evaluate_model(model,loss_fxn,val_iter):
     vali_samples = len(val_iter.dataset)
     model.eval()
     for i,data in enumerate(val_iter):
+
         (x, x_lengths), y = data.text, data.detection
+        # for j in range(x.shape[1]):   #print sentence for debugging purpose
+        #     sent = ""
+        #     for k in x[:,j]:
+        #         sent+=vocab.itos[k]
+        #         sent+=' '
+        #     print (sent)
         predictions = model.forward(x,x_lengths)
-        loss = loss_fxn(input=predictions.squeeze(), target=y.float())
+        loss = loss_fxn(input=predictions.squeeze(), target=(y-1).long())
         accum_loss += loss.item()
 
         # compare batch predictions to labels
@@ -117,12 +124,14 @@ def main(args):
 
         for i,data in enumerate(train_iter):
             (x, x_lengths), y = data.text, data.detection
-            for j in range(x.shape[1]):
-                sent = ""
-                for k in x[:,j]:
-                    sent+=vocab.itos[k]
-                    sent+=' '
-                print (sent)
+
+            # for j in range(x.shape[1]):   #print sentence for debugging purpose
+            #     sent = ""
+            #     for k in x[:,j]:
+            #         sent+=vocab.itos[k]
+            #         sent+=' '
+            #     print (sent)
+
             optimizer.zero_grad()
             predictions = model.forward(x,x_lengths)
 
@@ -141,15 +150,7 @@ def main(args):
 
             if batch_done == 0:
                 print('\n ---------------- T R A I N I N G   I N   P R O G R E S S ----------------\n')
-            #if (batch_done + 1) % eval_every == 0:
-                #vali_loss,vali_accuracy = evaluate_model(model, loss_fxn,val_iter)
-                #vali_accuracy_log[epoch] = vali_accuracy
-                #if vali_accuracy > max_vali_accuracy:
-                    #max_vali_accuracy = vali_accuracy
-                    #lowest_vali_loss = vali_loss
-                #print('\n Epoch {}, after {} total batches, accum loss is {}, validation accuracy is {} \n'.format(
-                    #epoch + 1, batch_done + 1, accum_loss / 100, vali_accuracy))
-                #batch_number_log[epoch] = batch_done + 1
+
             batch_done += 1
 
         vali_loss, vali_accuracy = evaluate_model(model, loss_fxn, val_iter)
