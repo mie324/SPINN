@@ -158,9 +158,10 @@ class RNN(nn.Module):
         #x = torch.transpose(x, 0, 1)
         x = x.contiguous()
         x = x.view(-1, self.hidden_dim)
-        x = F.tanh(x)
+        tanh = nn.Tanh()
+        x = tanh(x)
         x = self.fc1(x)
-        x = F.tanh(x)
+        x = tanh(x)
         x = self.fc2(x)
 
         x = x.view(-1, total_len)
