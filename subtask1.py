@@ -8,7 +8,8 @@ import os
 import numpy as np
 from subtask1_model import *
 import datetime
-
+import pandas as pd
+import matplotlib.pyplot as plt
 torch.manual_seed(77)
 bs,lr,MaxEpochs,model_type,num_filters,rnn_hidden_dim,embed_dim,save_csv = None,None,None,None,None,None,None,None
 
@@ -212,7 +213,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch-size', type=int, default=82)
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epochs', type=int, default=50)
-    parser.add_argument('--model', type=str, default='cnn',
+    parser.add_argument('--model', type=str, default='rnn',
                         help="Model type: baseline,rnn,cnn, crnn, birnn (Default: baseline)")
     parser.add_argument('--emb-dim', type=int, default=300)
     parser.add_argument('--rnn-hidden-dim', type=int, default=100)
