@@ -82,6 +82,7 @@ def load_model(learning_rate):
         model = CRNN(embed_dim, num_filters, np.array([2,4]))
     elif model_type == 'birnn':
         model = biRNN(embed_dim,rnn_hidden_dim)
+
     loss_fxn = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, eps=1e-04)
     return model,loss_fxn,optimizer
@@ -272,7 +273,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', type=float, default=0.001)
     parser.add_argument('--epochs', type=int, default=100)
     parser.add_argument('--model', type=str, default='rnn',
-                        help="Model type: baseline,rnn,cnn, crnn, birnn (Default: baseline)")
+                        help="Model type: baseline,rnn,cnn, crnn, birnn, rnn_sg(Default: baseline)")
     parser.add_argument('--emb-dim', type=int, default=10)
     parser.add_argument('--rnn-hidden-dim', type=int, default=10)
     parser.add_argument('--num-filt', type=int, default=50)

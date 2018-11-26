@@ -156,3 +156,33 @@ class RNN(nn.Module):
         activation = nn.Sigmoid()
         x = activation(x)
         return x
+
+
+# RNN MODEL
+class RNNSG(nn.Module):
+    def __init__(self, embedding_dim, hidden_dim):
+        super(RNNSG, self).__init__()
+        # self.embedding_layer = nn.Embedding.from_pretrained(vocab.vectors)
+        self.gru = nn.GRU(embedding_dim, hidden_dim, dropout=0.1, batch_first=True)
+        self.fc1 = nn.Linear(hidden_dim, 100)
+        self.fc2 = nn.Linear(100, 50)
+        self.fc3 = nn.Linear(50,1)
+        self.hidden_dim = hidden_dim
+
+    def forward(self, x, lengths):  # pass in x and x_length
+        # x = self.embedding_layer(x)
+        # x = nn.utils.rnn.pack_padded_sequence(x,lengths)
+        x = self.gru(x)
+        x = x[1]  # take the hidden states from all of the cells (i.e. from every token in the sentence)
+        # x = torch.transpose(x, 0, 1)
+        x = x.contiguous()
+        x = x.view(-1, self.hidden_dim)
+        x = F.tanh(x)
+        x = self.fc1(x)
+        x = F.tanh(x)
+        x = self.fc2(x)
+        x = F.tanh(x)
+        x = self.fc3(x)
+        x = F.sigmoid(x)
+        return x
+
