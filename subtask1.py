@@ -12,7 +12,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 torch.manual_seed(77)
 bs,lr,MaxEpochs,model_type,num_filters,rnn_hidden_dim,embed_dim,save_csv = None,None,None,None,None,None,None,None
-
+from test import *
 
 bs = 64
 def build_iter():
@@ -82,10 +82,45 @@ def evaluate_model(model,loss_fxn,val_iter):
                 total_val_corr += 1
             elif pred_res[j] > 0.5 and actual_res[j] == 1:
                 total_val_corr += 1
-
     eval_accuracy = float(total_val_corr)/vali_samples
     return accum_loss/(i+1),eval_accuracy  # return this as the evaluation accuracy
 
+
+def evaluate_model_test(model, loss_fxn, val_iter):
+    global bs
+    total_val_corr = 0
+    accum_loss = 0
+    vali_samples = len(val_iter.dataset)
+    model.eval()
+    Fpos = 0
+    Fneg = 0
+    Tpos = 0
+    Tneg = 0
+    confusion_mat = np.array([[0, 0],[0, 0]])
+    for i, data in enumerate(val_iter):
+        (x, x_lengths), y = data.text, data.detection
+        predictions = model.forward(x, x_lengths)
+        loss = loss_fxn(input=predictions.squeeze(), target=y.float())
+        accum_loss += loss.item()
+
+        # compare batch predictions to labels
+        pred_res = predictions.data.squeeze().numpy()
+        actual_res = y.int().numpy()
+        for j in range(len(y)):
+            if pred_res[j] <= 0.5 and actual_res[j] == 0:
+                total_val_corr += 1
+                Tneg += 1
+            elif pred_res[j] <= 0.5 and actual_res[j] == 1:
+                Fneg += 1
+            elif pred_res[j] > 0.5 and actual_res[j] == 1:
+                total_val_corr += 1
+                Tpos += 1
+            else:
+                Fpos += 1
+        confusion_mat = np.array([[Tpos,Fneg],[Fpos,Tneg]])
+
+    eval_accuracy = float(total_val_corr) / vali_samples
+    return accum_loss / (i + 1), eval_accuracy, confusion_mat  # return this as the evaluation accuracy
 
 
 '''
@@ -168,13 +203,15 @@ def main(args):
 
     torch.save(model,'model_{}.pt'.format(model_type))
 
-    test_loss,test_accuracy = evaluate_model(model,loss_fxn,test_iter)
+    test_loss,test_accuracy,cm = evaluate_model_test(model,loss_fxn,test_iter)
     print("================ RESULTS FOR MODEL: {} ================\n".format(model_type))
     # Use the results from the last epoch as loss and accuracy for training set:
     print("TRAIN SET: loss = {}, accuracy = {}".format(train_loss,train_accuracy))
     # Use the results from the last epoch as loss and accuracy for validation set:
     print("VALIDATION SET: loss = {}, accuracy = {}".format(vali_loss,vali_accuracy))
     print("TEST SET: loss = {}, accuracy = {}".format(test_loss, test_accuracy))
+
+    plot_confusion_matrix('{}'.format(model_type), cm, ['pun','not pun'])
 
     # generate csv file and plot accuracy
     if save_csv == True:
