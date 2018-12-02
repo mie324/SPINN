@@ -148,10 +148,28 @@ def evaluate_model_test(model, loss_fxn, val_iter):
     Fneg = 0
     Tpos = 0
     Tneg = 0
-    confusion_mat = np.array([[0, 0],[0, 0]])
-    for i, data in enumerate(val_iter):
-        (x, x_lengths), y = data.text, data.detection
-        predictions = model.forward(x, x_lengths)
+    for i,(score,location) in enumerate(val_iter):
+        x, y = score, location
+        x_lengths = np.array([], dtype=int)
+
+        for j in range(eval_bs):
+            x_lengths = np.append(x_lengths, int(len(score[j][0])))
+
+        max_length = max(x_lengths)
+        x_pad = np.zeros((eval_bs, max_length, embed_dim))
+
+        for j in range(eval_bs):
+            orig_score_arr = score[j][0]
+            pad = max_length - int(len(orig_score_arr))
+            if pad == 0:
+                x_pad[j, :, :] = orig_score_arr
+            elif pad > 0:
+                pad_arr = np.negative(np.ones((pad, 10)))
+                new_score_arr = np.concatenate((orig_score_arr, pad_arr), axis=0)
+                x_pad[j, :, :] = new_score_arr
+
+        x_pad2 = (torch.from_numpy(x_pad)).float()
+        predictions = model.forward(x_pad2, x_lengths)
         loss = loss_fxn(input=predictions.squeeze(), target=y.float())
         accum_loss += loss.item()
 
@@ -264,7 +282,7 @@ def main(args):
     torch.save(model,'model_{}{}.pt'.format(model_type,'WSDdetection'))
 
 
-    test_loss,test_accuracy,cm = evaluate_model_test(model,loss_fxn,test_iter)
+    test_loss,test_accuracy,cm = evaluate_model_test(model,loss_fxn,test_loader)
     print("================ RESULTS FOR MODEL: {} ================\n".format(model_type))
     # Use the results from the last epoch as loss and accuracy for training set:
     print("TRAIN SET: loss = {}, accuracy = {}".format(train_loss,train_accuracy))
