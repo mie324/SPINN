@@ -33,6 +33,19 @@ def evaluate(model, data,length):
     return prediction
 
 
+def evaluate_task1(model, data,length):
+    model.eval()
+    data = data.long()
+
+    prediction = model(data, torch.tensor([length]))
+
+    if prediction > 0.5:
+        return prediction, 'pun'
+    else:
+        return 1-prediction, 'not pun'
+
+
+
 TEXT = torchtext.data.Field(sequential=True, tokenize='spacy', include_lengths=True)
 LABEL = torchtext.data.Field(sequential=False, use_vocab=False)
 train, val, test = torchtext.data.TabularDataset.splits(
@@ -108,7 +121,7 @@ def evaluate_sg_detection(model,sentence_df):
 while True:
     ans = ''
     while ans=='':
-        context = input("Enter a sentence: \n ")
+        context = input("\nEnter a sentence: \n ")
         ans = context.replace(',', '')
         ans = ans.replace('.', '')
         if len(ans.split(sep=" "))<4:
@@ -126,6 +139,7 @@ while True:
 
     wsd_model = WSD(sv, wv, window=context_window_size, lang='en',ignore_case=True)
     word_list = context.split(' ')
+
     sentence_df = sensegram(context,word_list,context_window_size)
 
 
@@ -133,23 +147,55 @@ while True:
     j = 0
     prob = 0.0
 
+    # SUBTASK 1 with only RNN
+    model4 = torch.load('model_rnn.pt')
+    predictions4, label4 = evaluate_task1(model4, torch.from_numpy(inputs), length)
+    predictions4 = predictions4.detach().numpy()
+    print('RNN model thinks the sentence is {}, with {}% confidence'.format(label4, str(100 * round(float(predictions4), 3))))
 
+
+    # SUBTASK 1 with SENSEGRAM
     model3 = torch.load('model_rnn_sgWSDdetection.pt')
     prob, label3 = evaluate_sg_detection(model3, sentence_df)
     if label3 == 1:
         x = 'pun'
     else:
         x = 'not pun'
-    print('WSD model thinks the sentence is {}, with {}% confidence'.format(x, round(prob, 3) * 100))
 
-    model1 = torch.load("model_{}location.pt".format(list[0]))
-    label1 = evaluate(model1, torch.from_numpy(inputs),torch.tensor(length))
-    print('{} model thinks the punning word is "{}".'.format(list[0].capitalize(),sentence[int(label1)]))
+    WSD_str = str(round(float(prob), 3) * 100)
+    if len(WSD_str) > 4:
+        WSD_str = WSD_str[:4]
+    print('WSD+RNN model thinks the sentence is '+ x +' with '+WSD_str+'% confidence')
 
-    model2 = torch.load("model_{}location.pt".format(list[1]))
-    label2 = evaluate_sensegram(model2, sentence_df)
-    print('{} model thinks the punning word is "{}".'.format(list[1].capitalize(),word_list[int(label2)]))
+    request = ''
+
+    if label4 == 'not pun' and x == 'not pun':
+        request = input('\nDo you want to locate a possible punning word in this sentence? (yes/no)')
+    if label4 == 'pun' or x == 'pun' or request =='yes':
+
+        #SUBTASK 2 with rnn
+        model1 = torch.load("model_{}location.pt".format(list[0]))
+        label1 = evaluate(model1, torch.from_numpy(inputs),torch.tensor(length))
+        pun_word_1 = sentence[int(label1)]
+        print('{} model thinks the punning word is "{}".'.format(list[0].capitalize(),pun_word_1))
+
+
+        #SUBTASK 2 with sensegram_rnn
+        model2 = torch.load("model_{}location.pt".format(list[1]))
+        label2 = evaluate_sensegram(model2, sentence_df)
+        pun_word_2 = word_list[int(label2)]
+        print('{} model thinks the punning word is "{}".'.format(list[1].capitalize(),pun_word_2))
 
 
 
-    print('\nTo look up the definition, you can access: https://www.google.ca/search?q={}%20definition\n'.format(sentence[int(label1)]))
+        print('\nTo look up the definition of {}, you can go to: https://www.google.ca/search?q={}%20definition'.format(pun_word_1,pun_word_1))
+        if str(pun_word_2) != str(pun_word_1):
+            print('To look up the definition of {}, you can go to: https://www.google.ca/search?q={}%20definition'.format(pun_word_2, pun_word_2))
+
+
+'''
+###  PRESENTATION DEMO  ###
+We dressed up as almonds for Halloween . People say we ' re nuts !
+
+
+'''
